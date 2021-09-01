@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  *
  */
 
-@Component
+//@Component
 public class MyFirstTimerRouter extends RouteBuilder {
 	
 
