@@ -1,6 +1,14 @@
 package com.microservices.camelmicroservicea.routes.b;
 
+import java.util.Map;
+
+import org.apache.camel.Body;
+import org.apache.camel.ExchangeProperties;
+import org.apache.camel.Headers;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /***
@@ -11,6 +19,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MyFileRouter extends RouteBuilder {
+	
+	@Autowired
+	private DeciderBean deciderBean;
 
 	@Override
 	public void configure() throws Exception {
@@ -21,7 +32,8 @@ public class MyFileRouter extends RouteBuilder {
 				.choice()
 					.when(simple("${file:ext} == 'xml'"))
 						.log("XML FILE")
-					.when(simple("${body} contains 'USD'"))
+//					.when(simple("${body} contains 'USD'"))
+					.when(method(deciderBean))
 						.log("Not a XML FILE BUT contains USD")
 					.otherwise()
 						.log("Not an XML FILE")
@@ -35,4 +47,17 @@ public class MyFileRouter extends RouteBuilder {
 		
 	}
 
+}
+
+@Component
+class DeciderBean {
+	
+	Logger logger = LoggerFactory.getLogger(DeciderBean.class);
+	
+	public boolean isThisConditionMet(@Body String body, 
+			@Headers Map<String, String> headers,
+			@ExchangeProperties Map<String, String> exchangeProperties) {
+		logger.info("{} {} {}", body, headers, exchangeProperties);
+		return true;
+	}
 }
