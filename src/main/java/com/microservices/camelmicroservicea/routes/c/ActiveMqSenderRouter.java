@@ -21,10 +21,13 @@ public class ActiveMqSenderRouter extends RouteBuilder {
 //		//queue
 //		to("activemq:my-active-mq-queue");
 
-		from("file:files/json").
-			log("${body}").
-		to("activemq:my-active-mq-queue");
+//		from("file:files/json").
+//			log("${body}").
+//		to("activemq:my-active-mq-queue");
 		
+		from("file:files/xml").
+		log("${body}").
+		to("activemq:my-active-mq-xml-queue");
 	}
 
 }
