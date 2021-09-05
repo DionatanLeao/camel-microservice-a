@@ -19,7 +19,7 @@ public class MyFileRouter extends RouteBuilder {
 			.routeId("Files-Input-Route")
 			.transform().body(String.class)
 				.choice()
-					.when(simple("${file:ext} ends  with 'xml'"))
+					.when(simple("${file:ext} == 'xml'"))
 						.log("XML FILE")
 					.when(simple("${body} contains 'USD'"))
 						.log("Not a XML FILE BUT contains USD")
@@ -27,7 +27,11 @@ public class MyFileRouter extends RouteBuilder {
 						.log("Not an XML FILE")
 				.end()
 			.log("${messageHistory} ${file:absolute.path}")
+			.to("direct://log-file-values")
 		.to("file:files/output");
+		
+		from("direct:log-file-values")
+			.log("${messageHistory} ${file:absolute.path}");
 		
 	}
 
