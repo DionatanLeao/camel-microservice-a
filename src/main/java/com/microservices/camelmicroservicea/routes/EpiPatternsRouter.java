@@ -1,12 +1,16 @@
 package com.microservices.camelmicroservicea.routes;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.camel.AggregationStrategy;
-import org.apache.camel.Exchange;
+import org.apache.camel.Body;
+import org.apache.camel.ExchangeProperties;
+import org.apache.camel.Headers;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.microservices.camelmicroservicea.CurrencyExchange;
@@ -22,6 +26,9 @@ public class EpiPatternsRouter extends RouteBuilder {
 	
 //	@Autowired
 //	private SplitterComponent splitter;
+	
+	@Autowired
+	private DynamicRouterBean dynamicRouterBean;
 
 	@Override
 	public void configure() throws Exception {
@@ -53,6 +60,8 @@ public class EpiPatternsRouter extends RouteBuilder {
 //		.completionTimeout(HIGHEST)
 		.to("log:aggregate-json");
 		
+		
+		//Routing Splip
 		String routingSlip = "direct:endpoint1, direct:endpoint2";
 		
 		from("timer:routingSlip?period=10000")
@@ -64,6 +73,19 @@ public class EpiPatternsRouter extends RouteBuilder {
 		
 		from("direct:endpoint2")
 		.to("log:endpoint2");
+		
+		//Dynamic Routing
+		
+		//Step 1, Step 2, Step 3
+		
+		from("timer:dynamicRouting?period=10000")
+		.transform().constant("My dynamic routing")
+		.dynamicRouter(method(dynamicRouterBean));
+		
+		//Endpoint1
+		//Endpoint2
+		//Endpoint3
+		
 		
 	}
 
@@ -77,22 +99,27 @@ class SplitterComponent {
 }
 
 @Component
-class ArrayListAggregationStrategy implements AggregationStrategy {
-
-	 @SuppressWarnings("unchecked")
-	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-	        Object newBody = newExchange.getIn().getBody();
-	        ArrayList<Object> list = null;
-	        if (oldExchange == null) {
-	            list = new ArrayList<Object>();
-	            list.add(newBody);
-	            newExchange.getIn().setBody(list);
-	            return newExchange;
-	        } else {
-	            list = oldExchange.getIn().getBody(ArrayList.class);
-	            list.add(newBody);
-	            return oldExchange;
-	        }
-	    }
-
+class DynamicRouterBean {
+	
+	Logger logger = LoggerFactory.getLogger(DynamicRouterBean.class);
+	
+	int invocations;
+	
+	public String decideNextEndpoint(@ExchangeProperties Map<String, String> properties,
+			@Headers Map<String, String> headers,
+			@Body String body) {
+		
+		logger.info("{} {} {}", properties, headers, body);
+		
+		invocations++;
+		
+		if (invocations %3==0)
+			return "direct:endpoint1";
+		if (invocations %3==1)
+			return "direct:endpoint1,direct:endpoint2";
+		
+		return null;
+		
+	}
 }
+
