@@ -64,12 +64,12 @@ public class EpiPatternsRouter extends RouteBuilder {
 		//Routing Splip
 		String routingSlip = "direct:endpoint1, direct:endpoint2";
 		
-		from("timer:routingSlip?period=10000")
+		from("timer:routingSlip?period={{timePeriod}}")
 		.transform().constant("My message is Hardcoded")
 		.routingSlip(simple(routingSlip));
 		
 		from("direct:endpoint1")
-		.to("log:endpoint1");
+		.to("{{endpoint-for-logging}}");
 		
 		from("direct:endpoint2")
 		.to("log:endpoint2");
