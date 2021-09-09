@@ -21,7 +21,7 @@ import com.microservices.camelmicroservicea.CurrencyExchange;
  *
  */
 
-@Component
+//@Component
 public class EpiPatternsRouter extends RouteBuilder {
 	
 //	@Autowired
