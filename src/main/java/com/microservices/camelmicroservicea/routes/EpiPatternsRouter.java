@@ -33,6 +33,10 @@ public class EpiPatternsRouter extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 		
+		getContext().setTracing(true);
+		
+		errorHandler(deadLetterChannel("activemq:dead-letter-queue"));
+		
 //		from("timer:multicast?period=10000")
 //			.multicast()
 //		.to("log:something1", "log:something2", "log:something3");
@@ -51,7 +55,7 @@ public class EpiPatternsRouter extends RouteBuilder {
 		
 		//Aggregate
 		//Messages => Aggregate
-		//to, 3
+		//to, 3		
 		
 		from("file:files/aggregate-json")
 		.unmarshal().json(JsonLibrary.Jackson, CurrencyExchange.class)
@@ -68,7 +72,9 @@ public class EpiPatternsRouter extends RouteBuilder {
 		.transform().constant("My message is Hardcoded")
 		.routingSlip(simple(routingSlip));
 		
+		
 		from("direct:endpoint1")
+			.wireTap("log:wire-tap") //add
 		.to("{{endpoint-for-logging}}");
 		
 		from("direct:endpoint2")
@@ -81,11 +87,6 @@ public class EpiPatternsRouter extends RouteBuilder {
 		from("timer:dynamicRouting?period=10000")
 		.transform().constant("My dynamic routing")
 		.dynamicRouter(method(dynamicRouterBean));
-		
-		//Endpoint1
-		//Endpoint2
-		//Endpoint3
-		
 		
 	}
 
